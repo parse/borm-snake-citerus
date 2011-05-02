@@ -1,0 +1,10 @@
+.settings$
+.classpath
+.project
+.metadata$
+target/
+.iml
+.ipr
+.iws
+.idea/*
+.DS_Store
