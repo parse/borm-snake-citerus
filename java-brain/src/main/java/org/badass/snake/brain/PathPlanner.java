@@ -28,9 +28,7 @@ public class PathPlanner {
 		this.state = state;
 		this.target = target;
 		rePlan(snake.getHeadPosition(), snake.getDirection());
-		
 		return path.peek();
-	//	return null;
 	}
 	
 	private void rePlan(Position currentPos, Direction currentDir) {
@@ -39,30 +37,68 @@ public class PathPlanner {
 		
 		// Check movement alternatives;
 		Position toTarget = new Position(target.getX() - currentPos.getX(), target.getY() - currentPos.getY());
-		Direction nextMove = null;
+		int distX = Math.abs(toTarget.getX()), distY = Math.abs(toTarget.getY());
+		
+		Movement nextMove = null;
 
-		for ( int i = 0; i < 4; i++) {
-			Direction dir = headingAsDirection(i);
-			Position squarePos = currentPos.offset(dir);
-			Square s = state.getSquare(squarePos.getX(), squarePos.getY());
-			if ( s.isUnoccupied() ) {
-				nextMove = dir;
+		switch (currentDir) {
+		case NORTH:
+			if ( distX > distY ) {
+				if ( toTarget.getX() > 0 && isSafeTurn(currentPos, currentDir, Movement.RIGHT) ) nextMove = Movement.RIGHT;
+				else if ( isSafeTurn(currentPos, currentDir, Movement.LEFT) ) nextMove = Movement.LEFT;
+			} else {
+				if ( toTarget.getY() < 0 && isSafeTurn(currentPos, currentDir, Movement.FORWARD) ) nextMove = Movement.FORWARD;
+				else if ( isSafeTurn(currentPos, currentDir, Movement.LEFT) ) nextMove = Movement.LEFT;
+				else nextMove = Movement.RIGHT;
 			}
+			break;
+			
+		case EAST:
+			if ( distX > distY ) {
+				if ( toTarget.getX() > 0 && isSafeTurn(currentPos, currentDir, Movement.FORWARD) ) nextMove = Movement.FORWARD;
+				else if ( isSafeTurn(currentPos, currentDir, Movement.LEFT) ) nextMove = Movement.LEFT;
+				else nextMove = Movement.RIGHT;
+			} else {
+				if ( toTarget.getY() > 0 && isSafeTurn(currentPos, currentDir, Movement.LEFT) ) nextMove = Movement.LEFT;
+				else if ( isSafeTurn(currentPos, currentDir, Movement.RIGHT) ) nextMove = Movement.RIGHT;
+				else nextMove = Movement.FORWARD;
+			}
+			break;
+			
+		case SOUTH:
+			if ( distX > distY ) {
+				if ( toTarget.getX() > 0 && isSafeTurn(currentPos, currentDir, Movement.LEFT) ) nextMove = Movement.LEFT;
+				else if ( isSafeTurn(currentPos, currentDir, Movement.RIGHT) ) nextMove = Movement.RIGHT;
+				else nextMove = Movement.FORWARD;
+			} else {
+				if ( toTarget.getY() > 0 && isSafeTurn(currentPos, currentDir, Movement.FORWARD) ) nextMove = Movement.FORWARD;
+				else if ( isSafeTurn(currentPos, currentDir, Movement.LEFT) ) nextMove = Movement.LEFT;
+				else nextMove = Movement.RIGHT;
+			}
+			break;
+		case WEST:
+			if ( distX > distY ) {
+				if ( toTarget.getX() > 0 && isSafeTurn(currentPos, currentDir, Movement.LEFT) ) nextMove = Movement.LEFT;
+				else if ( isSafeTurn(currentPos, currentDir, Movement.RIGHT) ) nextMove = Movement.RIGHT;
+				else nextMove = Movement.FORWARD;
+			} else {
+				if ( toTarget.getY() > 0 && isSafeTurn(currentPos, currentDir, Movement.LEFT) ) nextMove = Movement.LEFT;
+				else if ( isSafeTurn(currentPos, currentDir, Movement.RIGHT) ) nextMove = Movement.RIGHT;
+				else nextMove = Movement.FORWARD;
+			}
+			
+			break;
 		}
 		
 		if ( nextMove == null ) return;
+		Direction newDir = currentDir.turn(nextMove);
 		
-		path.push(Direction.newMovement(currentDir, nextMove));
-		rePlan(currentPos.offset(nextMove), nextMove);
+		path.push(nextMove);
+		rePlan(currentPos.offset(newDir), newDir);
 	}
 	
-	private Direction headingAsDirection(int heading) {
-		switch (heading) {
-		case 0: return Direction.NORTH;
-		case 1: return Direction.EAST;
-		case 2: return Direction.SOUTH;
-		case 3: return Direction.WEST;
-		}
-		return null;
+	private boolean isSafeTurn(Position pos, Direction heading, Movement turn) {
+		Position square = pos.offset(heading.turn(turn));
+		return state.getSquare(square).isUnoccupied();
 	}
 }
