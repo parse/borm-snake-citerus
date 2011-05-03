@@ -17,6 +17,8 @@ import se.citerus.crazysnake.Position;
 
 public class BormBrain implements Brain {
 	
+	private StringBuffer memory = new StringBuffer();
+	
 	public String getName() {
 		return "Team BORM";
 	}
@@ -27,25 +29,26 @@ public class BormBrain implements Brain {
 		
 		Position bestFruit = null;
 		Movement bestMovement = null;
+		int otherSnakes = 0;
 		
-		Snake ourSnake = null;
-		Position ourPosition = null;
-		
-		for ( Snake snake : snakes ) {
-			if (snake.getName() == "Team BORM") {
-				ourSnake = snake;
-				ourPosition = snake.getHeadPosition();
-			}
-		}
-		
-		Square ourSquare = arg0.getSquare(ourPosition);
-		
+		Snake ourSnake = arg0.getSnake( getName() );
+		Position ourPosition = ourSnake.getHeadPosition();
+				
 		for ( Position pos : fruits) {
 			for ( Snake snake : snakes ) {
 				// Found snakes position is less than our own
-				if (PositionUtils.distance(snake.getHeadPosition(), pos) > PositionUtils.distance(ourPosition, pos)) {
+				if ( PositionUtils.distance(snake.getHeadPosition(), pos) > PositionUtils.distance(ourPosition, pos) ) {
 					bestFruit = pos;
+					System.out.println( "--- DEBUG: Snake "+snake.getName()+" is further away, fruit at "+ pos.getX() +": " + pos.getY() );
+					
+					if (snake != ourSnake) 
+						otherSnakes = 1;
 				}
+				
+				if (otherSnakes == 0) {
+					bestFruit = pos;
+					System.out.println("-- DEBUG: No other snakes, going for fruit at "+ pos.getX()+":"+pos.getY());
+				}			
 			}	
 		}
 		
@@ -55,22 +58,22 @@ public class BormBrain implements Brain {
 		if (bestFruit != null) {
 			bestMovement = planner.plan(bestFruit, arg0);
 		} else {
-			if ( !arg0.getSquare(ourPosition.getX()+1, ourPosition.getY()).isCollision() ) {
+			if ( arg0.getSquare(ourPosition.getX()+1, ourPosition.getY()).isUnoccupied() ) {
 				// No trouble (x+1,y)
 				Position newPosition = new Position(ourPosition.getX()+1, ourPosition.getY());
-				bestMovement = planner.plan(newPosition);
-			} else if ( !arg0.getSquare(ourPosition.getX(), ourPosition.getY()+1).isCollision() ) {
+				bestMovement = planner.plan(newPosition, arg0);
+			} else if ( arg0.getSquare(ourPosition.getX(), ourPosition.getY()+1).isUnoccupied() ) {
 				// No trouble (x,y+1)
 				Position newPosition = new Position(ourPosition.getX()+1, ourPosition.getY());
-				bestMovement = planner.plan(newPosition);
-			} else if ( !arg0.getSquare(ourPosition.getX()-1, ourPosition.getY()).isCollision() ) {
+				bestMovement = planner.plan(newPosition, arg0);
+			} else if ( arg0.getSquare(ourPosition.getX()-1, ourPosition.getY()).isUnoccupied() ) {
 				// No trouble (x-1,y)
 				Position newPosition = new Position(ourPosition.getX()-1, ourPosition.getY());
-				bestMovement = planner.plan(newPosition);
-			} else if ( !arg0.getSquare(ourPosition.getX(), ourPosition.getY()-1).isCollision() ) {
+				bestMovement = planner.plan(newPosition, arg0);
+			} else if ( arg0.getSquare(ourPosition.getX(), ourPosition.getY()-1).isUnoccupied() ) {
 				// No trouble (x,y-1)
 				Position newPosition = new Position(ourPosition.getX()-1, ourPosition.getY());
-				bestMovement = planner.plan(newPosition);
+				bestMovement = planner.plan(newPosition, arg0);
 			}
 					
 			/*
