@@ -3,6 +3,8 @@ package org.badass.snake.brain;
 import se.citerus.crazysnake.*;
 
 import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -32,7 +34,25 @@ public class BormBrain implements Brain {
 		int otherSnakes = 0;
 		
 		Snake ourSnake = arg0.getSnake( getName() );
-		Position ourPosition = ourSnake.getHeadPosition();
+		final Position ourPosition = ourSnake.getHeadPosition();
+		
+
+		PathPlanner planner = new PathPlanner(ourSnake);
+		
+		return planner.plan(ourSnake, new Position(25, 25), arg0);
+		
+		/*Collections.sort(fruits, new Comparator<Position>() {
+			public int compare(Position o1, Position o2) {
+				int dist1 = PositionUtils.distance(ourPosition, o1),
+					dist2 = PositionUtils.distance(ourPosition, o2);
+				return (int)Math.signum(dist1 - dist2);  
+			}
+		});
+		if ( fruits.size() > 0 )
+			return planner.plan(ourSnake, fruits.get(0), arg0);
+		else
+			return Movement.FORWARD;
+
 				
 		for ( Position pos : fruits) {
 			for ( Snake snake : snakes ) {
@@ -44,41 +64,33 @@ public class BormBrain implements Brain {
 			}	
 		}
 		
-		PathPlanner planner = new PathPlanner(ourSnake);
 		
 		// Found a fruit, go for it!
 		if (bestFruit != null) {
 			System.out.println("--DEBUG: Going for fruit at "+bestFruit.getX()+":"+bestFruit.getY());
-			bestMovement = planner.plan(bestFruit, arg0);
+			bestMovement = planner.plan(ourSnake, bestFruit, arg0);
 		} else {
 			if ( arg0.getSquare(ourPosition.getX()+1, ourPosition.getY()).isUnoccupied() ) {
 				// No trouble (x+1,y)
 				Position newPosition = new Position(ourPosition.getX()+1, ourPosition.getY());
-				bestMovement = planner.plan(newPosition, arg0);
+				bestMovement = planner.plan(ourSnake, newPosition, arg0);
 			} else if ( arg0.getSquare(ourPosition.getX(), ourPosition.getY()+1).isUnoccupied() ) {
 				// No trouble (x,y+1)
 				Position newPosition = new Position(ourPosition.getX()+1, ourPosition.getY());
-				bestMovement = planner.plan(newPosition, arg0);
+				bestMovement = planner.plan(ourSnake, newPosition, arg0);
 			} else if ( arg0.getSquare(ourPosition.getX()-1, ourPosition.getY()).isUnoccupied() ) {
 				// No trouble (x-1,y)
 				Position newPosition = new Position(ourPosition.getX()-1, ourPosition.getY());
-				bestMovement = planner.plan(newPosition, arg0);
+				bestMovement = planner.plan(ourSnake, newPosition, arg0);
 			} else if ( arg0.getSquare(ourPosition.getX(), ourPosition.getY()-1).isUnoccupied() ) {
 				// No trouble (x,y-1)
 				Position newPosition = new Position(ourPosition.getX()-1, ourPosition.getY());
-				bestMovement = planner.plan(newPosition, arg0);
+				bestMovement = planner.plan(ourSnake, newPosition, arg0);
 			}
-					
-			/*
-			for (int x = ourPosition.getX()-10; x < ourPosition.getX()+10; x++) {
-				for (int y = ourPosition.getY()-10; Y < ourPosition.getY()+10; x++) {
-					
-				}
-			}
-			*/
+			
 		}
 		
-		return bestMovement;
+		return bestMovement; */
 	}
 
 	@Override
