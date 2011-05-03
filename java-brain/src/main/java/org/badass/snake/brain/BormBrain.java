@@ -7,7 +7,7 @@ import se.citerus.crazysnake.GameState;
 import se.citerus.crazysnake.HeatMeta;
 import se.citerus.crazysnake.Movement;
 
-class BormBrain implements Brain {
+public class BormBrain implements Brain {
 	Movement getNextMove() {
 		return null;
 		//LOL
