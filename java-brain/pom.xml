@@ -4,10 +4,10 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 
     <modelVersion>4.0.0</modelVersion>
-    <name>your-team-name-here</name>
+    <name>borm</name>
     <version>1.0</version>
     <groupId>se.citerus.crazysnake</groupId>
-    <artifactId>your-team-name-here</artifactId>
+    <artifactId>borm</artifactId>
 
     <dependencies>
         <dependency>
