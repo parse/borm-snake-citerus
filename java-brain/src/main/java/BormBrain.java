@@ -1,4 +1,4 @@
-package se.citerus.crazysnake.brain;
+package org.badass.snake.brain;
 
 import java.util.Set;
 
