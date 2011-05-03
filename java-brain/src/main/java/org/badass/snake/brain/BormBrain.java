@@ -40,15 +40,7 @@ public class BormBrain implements Brain {
 				if ( PositionUtils.distance(snake.getHeadPosition(), pos) > PositionUtils.distance(ourPosition, pos) ) {
 					bestFruit = pos;
 					System.out.println( "--- DEBUG: Snake "+snake.getName()+" is further away, fruit at "+ pos.getX() +": " + pos.getY() );
-					
-					if (snake != ourSnake) 
-						otherSnakes = 1;
-				}
-				
-				if (otherSnakes == 0) {
-					bestFruit = pos;
-					System.out.println("-- DEBUG: No other snakes, going for fruit at "+ pos.getX()+":"+pos.getY());
-				}			
+				}		
 			}	
 		}
 		
@@ -56,6 +48,7 @@ public class BormBrain implements Brain {
 		
 		// Found a fruit, go for it!
 		if (bestFruit != null) {
+			System.out.println("--DEBUG: Going for fruit at "+bestFruit.getX()+":"+bestFruit.getY());
 			bestMovement = planner.plan(bestFruit, arg0);
 		} else {
 			if ( arg0.getSquare(ourPosition.getX()+1, ourPosition.getY()).isUnoccupied() ) {
