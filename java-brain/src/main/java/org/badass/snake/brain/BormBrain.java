@@ -1,7 +1,8 @@
+ 
 package org.badass.snake.brain;
-
 import se.citerus.crazysnake.*;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
@@ -27,75 +28,36 @@ public class BormBrain implements Brain {
 
 	public Movement getNextMove(GameState arg0) {
 		Collection<Snake> snakes = arg0.snakes();
-		List<Position> fruits = arg0.getFruitPositions();
-		
-		Position bestFruit = null;
-		Movement bestMovement = null;
-		int otherSnakes = 0;
+		ArrayList<Position> fruits = new ArrayList<Position>(arg0.getFruitPositions());
 		
 		Snake ourSnake = arg0.getSnake( getName() );
 		final Position ourPosition = ourSnake.getHeadPosition();
-		
 
 		PathPlanner planner = new PathPlanner(ourSnake);
 		
-		return planner.plan(ourSnake, new Position(25, 25), arg0);
-		
-		/*Collections.sort(fruits, new Comparator<Position>() {
+		Collections.sort(fruits, new Comparator<Position>() {
 			public int compare(Position o1, Position o2) {
 				int dist1 = PositionUtils.distance(ourPosition, o1),
 					dist2 = PositionUtils.distance(ourPosition, o2);
 				return (int)Math.signum(dist1 - dist2);  
 			}
 		});
-		if ( fruits.size() > 0 )
-			return planner.plan(ourSnake, fruits.get(0), arg0);
-		else
-			return Movement.FORWARD;
-
-				
+		
 		for ( Position pos : fruits) {
-			for ( Snake snake : snakes ) {
+			for ( Snake otherSnake : snakes ) {
 				// Found snakes position is less than our own
-				if ( PositionUtils.distance(snake.getHeadPosition(), pos) > PositionUtils.distance(ourPosition, pos) ) {
-					bestFruit = pos;
-					System.out.println( "--- DEBUG: Snake "+snake.getName()+" is further away, fruit at "+ pos.getX() +": " + pos.getY() );
+				if ( PositionUtils.distance(otherSnake.getHeadPosition(), pos) > PositionUtils.distance(ourPosition, pos) ) {
+					System.out.println( "--- DEBUG: Snake "+otherSnake.getName()+" is further away, fruit at "+ pos.getX() +": " + pos.getY() );
+					return planner.plan(ourSnake, pos, arg0);
 				}		
 			}	
 		}
 		
-		
-		// Found a fruit, go for it!
-		if (bestFruit != null) {
-			System.out.println("--DEBUG: Going for fruit at "+bestFruit.getX()+":"+bestFruit.getY());
-			bestMovement = planner.plan(ourSnake, bestFruit, arg0);
-		} else {
-			if ( arg0.getSquare(ourPosition.getX()+1, ourPosition.getY()).isUnoccupied() ) {
-				// No trouble (x+1,y)
-				Position newPosition = new Position(ourPosition.getX()+1, ourPosition.getY());
-				bestMovement = planner.plan(ourSnake, newPosition, arg0);
-			} else if ( arg0.getSquare(ourPosition.getX(), ourPosition.getY()+1).isUnoccupied() ) {
-				// No trouble (x,y+1)
-				Position newPosition = new Position(ourPosition.getX()+1, ourPosition.getY());
-				bestMovement = planner.plan(ourSnake, newPosition, arg0);
-			} else if ( arg0.getSquare(ourPosition.getX()-1, ourPosition.getY()).isUnoccupied() ) {
-				// No trouble (x-1,y)
-				Position newPosition = new Position(ourPosition.getX()-1, ourPosition.getY());
-				bestMovement = planner.plan(ourSnake, newPosition, arg0);
-			} else if ( arg0.getSquare(ourPosition.getX(), ourPosition.getY()-1).isUnoccupied() ) {
-				// No trouble (x,y-1)
-				Position newPosition = new Position(ourPosition.getX()-1, ourPosition.getY());
-				bestMovement = planner.plan(ourSnake, newPosition, arg0);
-			}
-			
-		}
-		
-		return bestMovement; */
+		return planner.plan(ourSnake, ourPosition, arg0);
 	}
 
 	@Override
 	public void init(Set<String> arg0, HeatMeta arg1) {
 		// TODO Auto-generated method stub
-		
 	}
 }
