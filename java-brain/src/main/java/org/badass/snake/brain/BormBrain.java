@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -19,9 +20,6 @@ import se.citerus.crazysnake.Snake;
 import se.citerus.crazysnake.Position;
 
 public class BormBrain implements Brain {
-	
-	private StringBuffer memory = new StringBuffer();
-	
 	public String getName() {
 		return "Team BORM";
 	}
@@ -32,28 +30,47 @@ public class BormBrain implements Brain {
 		
 		Snake ourSnake = arg0.getSnake( getName() );
 		final Position ourPosition = ourSnake.getHeadPosition();
+		final Direction ourDir = ourSnake.getDirection();
 
-		PathPlanner planner = new PathPlanner(ourSnake);
+		final PathPlanner planner = new PathPlanner(ourSnake, arg0);
+		Position bestFruit = null;
+		
+		final HashMap<Position, Float> fruitDensities = new HashMap<Position, Float>(fruits.size());
+		
+		for ( Position fruit : fruits ) {
+			float d = 0;
+			for ( Position other : fruits ) {
+				if ( !fruit.equals(other) ) {
+					float distance = (float)PositionUtils.distance(fruit, other);
+					d += (100.0f / distance);
+				}
+			}
+			fruitDensities.put(fruit, d / fruits.size());
+		}
 		
 		Collections.sort(fruits, new Comparator<Position>() {
 			public int compare(Position o1, Position o2) {
-				int dist1 = PositionUtils.distance(ourPosition, o1),
-					dist2 = PositionUtils.distance(ourPosition, o2);
-				return (int)Math.signum(dist1 - dist2);  
+				float dist1 = planner.walkDistance(ourPosition, ourDir, o1),
+					dist2 = planner.walkDistance(ourPosition, ourDir, o2);
+				return (int)Math.signum((dist1 - fruitDensities.get(o1)) 
+										- (dist2 - fruitDensities.get(o2)));  
 			}
 		});
 		
-		for ( Position pos : fruits) {
+		int fruitIx = 0;
+		if ( fruits.size() > 0 && fruitIx < fruits.size() ) {
 			for ( Snake otherSnake : snakes ) {
-				// Found snakes position is less than our own
-				if ( PositionUtils.distance(otherSnake.getHeadPosition(), pos) > PositionUtils.distance(ourPosition, pos) ) {
-					System.out.println( "--- DEBUG: Snake "+otherSnake.getName()+" is further away, fruit at "+ pos.getX() +": " + pos.getY() );
-					return planner.plan(ourSnake, pos, arg0);
-				}		
-			}	
+				bestFruit = fruits.get(fruitIx);
+				if ( planner.walkDistance(otherSnake.getHeadPosition(), otherSnake.getDirection(), bestFruit) < planner.walkDistance(ourPosition, ourDir, bestFruit) )
+					fruitIx++;
+			}
+			
+			if ( bestFruit != null )
+				return planner.plan(ourSnake, bestFruit);
 		}
 		
-		return planner.plan(ourSnake, ourPosition, arg0);
+		System.out.println("Borm-idling.");
+		return planner.plan(ourSnake, ourPosition);
 	}
 
 	@Override

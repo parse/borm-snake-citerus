@@ -9,14 +9,17 @@ import java.util.Stack;
 import se.citerus.crazysnake.*;
 
 public class PathPlanner {
+	public static final int MAX_DIST = 200;
 	private Snake snake = null;
+	
 	private Stack<Movement> path = null;
 	private Position target = null;
+	
 	private GameState state = null;
 	
-	public PathPlanner(Snake snake) {
+	public PathPlanner(Snake snake, GameState state) {
 		this.snake = snake;
-		this.path = new Stack<Movement>();
+		this.state = state;
 	}
 	
 	public Snake getSnake() {
@@ -37,10 +40,49 @@ public class PathPlanner {
 		}
 	}
 	
-	public Movement plan(Snake from, Position target, GameState state) {
-		
+	public Movement plan(Snake from, Position target) {
+		this.state = state;
 		Direction dir = from.getDirection();
 		Position pos = from.getHeadPosition();
+		
+		ArrayList<Choice> choices = new ArrayList<Choice>();
+		
+		for ( int i = 0; i < 3; i++ ) {
+			Movement move = headingAsMovement(i);
+			Direction newDir = dir.turn(move);
+			Position newPos = pos.offset(newDir);
+			if ( state.getSquare(newPos).isUnoccupied() ) {
+				choices.add(new Choice(move, walkDistance(newPos, newDir, target, 0)));
+			}
+		}
+		
+		Collections.sort(choices, new Comparator<Choice>() {
+			public int compare(Choice o1, Choice o2) {
+				return (int)Math.signum(o1.h - o2.h);
+			}
+		});
+		
+		if ( choices.size() > 0 )
+			return choices.get(0).move;
+		else
+			return Movement.FORWARD;
+	}
+	
+	public int walkDistance(Position pos, Direction dir, Position target) {
+		return walkDistance(pos, dir, target, 0);
+	}
+	
+	private int walkDistance(Position pos, Direction dir, Position target, int walked) {
+		if ( pos.getX() == target.getX() && pos.getY() == target.getY() ) {
+			//System.out.println("Walking dist to " + target + " is " + walked);
+			return walked;
+		}
+		else if ( walked >= MAX_DIST ) {
+			//System.out.println("Max path dist reached. Returning.");
+			return walked;
+		}
+		
+		//System.out.println("Walked: " + walked + ", curr = " + pos + ", target = " + target);
 		
 		ArrayList<Choice> choices = new ArrayList<Choice>();
 		
@@ -59,92 +101,25 @@ public class PathPlanner {
 			}
 		});
 		
-		if ( choices.size() > 0 )
-			return choices.get(0).move;
+		if ( choices.size() > 0 ) {
+			Direction newDir = dir.turn(choices.get(0).move);
+			Position newPos = pos.offset(newDir);
+			return walkDistance(newPos, newDir, target, walked + 1);
+		}
 		else
-			return Movement.FORWARD;
+			return MAX_DIST;
 	}
 	
+	private ArrayList<Choice> naivePath() {
+		return null;
+	}
 	
-	/*private void rePlan(Position currentPos, Direction currentDir) {
-		if ( currentPos.equals(target) )
-			return;
-		
-		// Check movement alternatives;
-		Position toTarget = new Position(target.getX() - currentPos.getX(), target.getY() - currentPos.getY());
-		int distX = Math.abs(toTarget.getX()), distY = Math.abs(toTarget.getY());
-		
-		Movement nextMove = null;
-
-		switch (currentDir) {
-		case NORTH:
-			if ( distX > distY ) {
-				if ( toTarget.getX() > 0 && isSafeTurn(currentPos, currentDir, Movement.RIGHT) ) nextMove = Movement.RIGHT;
-				else if ( isSafeTurn(currentPos, currentDir, Movement.LEFT) ) nextMove = Movement.LEFT;
-				else nextMove = Movement.FORWARD;
-			} else {
-				if ( toTarget.getY() > 0 && isSafeTurn(currentPos, currentDir, Movement.RIGHT) ) nextMove = Movement.RIGHT;
-				else if ( toTarget.getY() < 0 && isSafeTurn(currentPos, currentDir, Movement.FORWARD) ) nextMove = Movement.FORWARD;
-				else nextMove = Movement.LEFT;
-			}
-			break;
-			
-		case EAST:
-			if ( distX > distY ) {
-				if ( toTarget.getX() > 0 && isSafeTurn(currentPos, currentDir, Movement.FORWARD) ) nextMove = Movement.FORWARD;
-				else if ( isSafeTurn(currentPos, currentDir, Movement.LEFT) ) nextMove = Movement.LEFT;
-				else nextMove = Movement.RIGHT;
-			} else {
-				if ( toTarget.getY() > 0 && isSafeTurn(currentPos, currentDir, Movement.LEFT) ) nextMove = Movement.LEFT;
-				else if ( isSafeTurn(currentPos, currentDir, Movement.RIGHT) ) nextMove = Movement.RIGHT;
-				else nextMove = Movement.FORWARD;
-			}
-			break;
-			
-		case SOUTH:
-			if ( distX > distY ) {
-				if ( toTarget.getX() > 0 && isSafeTurn(currentPos, currentDir, Movement.LEFT) ) nextMove = Movement.LEFT;
-				else if ( isSafeTurn(currentPos, currentDir, Movement.RIGHT) ) nextMove = Movement.RIGHT;
-				else nextMove = Movement.FORWARD;
-			} else {
-				if ( toTarget.getY() > 0 && isSafeTurn(currentPos, currentDir, Movement.FORWARD) ) nextMove = Movement.FORWARD;
-				else if ( isSafeTurn(currentPos, currentDir, Movement.LEFT) ) nextMove = Movement.LEFT;
-				else nextMove = Movement.RIGHT;
-			}
-			break;
-		case WEST:
-			if ( distX > distY ) {
-				if ( toTarget.getX() > 0 && isSafeTurn(currentPos, currentDir, Movement.LEFT) ) nextMove = Movement.LEFT;
-				else if ( isSafeTurn(currentPos, currentDir, Movement.RIGHT) ) nextMove = Movement.RIGHT;
-				else nextMove = Movement.FORWARD;
-			} else {
-				if ( toTarget.getY() > 0 && isSafeTurn(currentPos, currentDir, Movement.LEFT) ) nextMove = Movement.LEFT;
-				else if ( isSafeTurn(currentPos, currentDir, Movement.RIGHT) ) nextMove = Movement.RIGHT;
-				else nextMove = Movement.FORWARD;
-			}
-			
-			break;
-		}
-		
-		if ( nextMove == null ) return;
-		Direction newDir = currentDir.turn(nextMove);
-		
-		path.push(nextMove);
-		rePlan(currentPos.offset(newDir), newDir);
-	}*/
-	
-	private Movement headingAsMovement(int head) {
+	public static Movement headingAsMovement(int head) {
 		switch (head) {
 		case 0: return Movement.LEFT;
 		case 1: return Movement.FORWARD;
 		case 2: return Movement.RIGHT;
 		}
 		return null;
-	}
-	
-	private boolean isSafeTurn(Position pos, Direction heading, Movement turn) {
-		Position p = pos.offset(heading.turn(turn), 1);
-		if ( p.getX() <= 0 || p.getX() >= state.getNoColumns() || p.getY() <= 0 || p.getY() >= state.getNoRows() ) return false;
-		return state.getSquare(p).isUnoccupied();
 	}
 }
