@@ -1,0 +1,5 @@
+Unpack snake-engine.zip.
+Build with mvn clean install
+
+RUNNING:
+BRAIN_HOME=/path/to/targets/java-brain/target/ ./start.sh
