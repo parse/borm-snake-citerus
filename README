@@ -1,5 +1,17 @@
-Unpack snake-engine.zip.
-Build with mvn clean install
+Requirements:
+* Maven
+* JDK6
 
-RUNNING:
-BRAIN_HOME=/path/to/targets/java-brain/target/ ./start.sh
+From https://bitbucket.org/citerus/crazysnake-public/wiki/Home
+* Unzip the source code or clone the repository to <SOME-PATH>/crazysnake-api
+* Open a terminal window and enter the crazysnake-api/api directory
+* Enter the following at the terminal: mvn clean install
+* cd to crazysnake-api/<lang>-brain of your choice.
+* Open up crazysnake-api/<lang>-brain/pom.xml in a text editor of your choice. Change any entries with your-team-name-here to your registered team name. This makes it easier for us to keep teams deliverables separate.
+* Enter the following at the terminal: mvn clean install
+* You should now have a complete brain, packaged as a jar-file in crazysnake-api/<lang>-brain/target/your-team-name-1.0-SNAPSHOT.jar This resulting .jar-file can be used by our game engine to incarnate a snake with your brain and make it part of the game. 
+
+
+Running from engine:
+* Unpack snake-engine.zip
+* Terminal: BRAIN_HOME=/path/to/targets/java-brain/target/ ./start.sh
